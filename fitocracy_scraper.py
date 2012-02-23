@@ -208,7 +208,7 @@ def main():
 
     print "Writing file..."
     txtfile.close()
-    f.close()
+    #f.close()
 
 
 
