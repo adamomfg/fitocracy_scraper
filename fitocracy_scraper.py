@@ -51,6 +51,11 @@ outputfile = ''
 seperator = ':'
 
 
+#get comments too?
+get_comments = 1
+
+
+
 #CODE BEGINS HERE
 from bs4 import BeautifulSoup
 import sys
@@ -62,6 +67,9 @@ import spynner
 import pyquery
 
 
+
+
+
 def getHtml():
     websiteProfile = 'http://www.fitocracy.com/profile/'
     websiteLogin = 'http://www.fitocracy.com/accounts/login/'
@@ -69,8 +77,6 @@ def getHtml():
     br = spynner.browser.Browser()
     br.load(websiteProfile)
     br.create_webview()
-
-    #if you want to watch spynner in action, uncomment this
     #br.show()
 
     br.wk_fill('input[id=id_username]', username)
@@ -87,13 +93,24 @@ def getHtml():
         sleep(1)
     
     myhtml = br._get_html()
+
+    #for testing so i dont have to scrape every time
+    """
+    f = open('/home/ben/fitocracy.html', 'w')
+    f.write(myhtml)
+    f.close()
+    """
     br.close()
     return myhtml
     
 
 def main():
     txtfile = open(outputfile, 'w')
+    
     f = getHtml()
+
+    #just for testing
+    #f = open('/home/ben/fitocracy.html', 'r')
 
     soup = BeautifulSoup(f)
     actions = soup.find_all("div", "action")
@@ -103,6 +120,41 @@ def main():
             date = atags[1].contents[0] #date
         except:
             pass
+
+        #get comments
+        litags = action.find_all('li', 'user_comment clearfix')
+        users = ''
+        comments = []
+        for tag in litags:
+            for p in tag.find_all('p'):
+                try:
+                    comments.append(str(p.contents[2]))
+                    for span in p.find('span'):
+                        user = str(span.string)
+                        users = users + ',' + user
+
+                except:
+                    pass
+        
+        #clean up comments 
+        newusers = []
+        newcomments = []
+        for user in users.split(','):
+            if user == '\n':
+                continue
+            elif user == '':
+                continue
+            else:
+                newusers.append(user.strip())
+        
+        for comment in comments:
+            if comment == '\n':
+                continue
+            elif comment == '':
+                continue
+            else:
+                newcomments.append(comment.strip())
+        
 
         span = action.find_all('span')
         for tag in span:
@@ -116,29 +168,47 @@ def main():
                 if not tag.find(text = re.compile('\d')):
                     lift = tag.contents[0]
                     lift = re.search(r'(.+)(:)', lift).group(1)
-                    lbs = '0 lb'
+                    weight = '0 lb'
                     set = 1
                     continue
                 if tag.find(text = re.compile('lb')) or tag.find(text = re.compile('kg')):
                     weight = tag.contents[0]
                     continue
+
                 if tag.find(text = re.compile('reps')):
                     reps = tag.contents[0]
-                    
+
+                    #look for user comments
+                    note = ''
+                    next_note = tag.find_next("li", "stream_note")
+                    if next_note.parent == tag.parent.parent:
+                        note = next_note.contents[0]
+
                     #make output look nice
                     reps = re.search(r'(\d+)', reps).group()
                     weight = re.search(r'(\d+)', weight).group()
                     #date = time.strptime(date, "%b %d, %Y")
                     
-                    output =  date + seperator + lift + seperator + str(set) + seperator + str(reps) + seperator + str(weight) + '\n'
+                    output =  date + seperator + lift + seperator + str(set) + seperator + str(reps) + seperator + str(weight) +'\n'
+                    if set == 1 and note and get_comments:
+                        txtfile.write('\n' + note + '\n')
                     txtfile.write(output)
                     set = set + 1
-                    
+               
             except:
                 pass
-            
+        if get_comments:
+            try:
+                for i in range(len(newusers)):
+                    output = newusers[i] + seperator +  newcomments[i] + '\n' + '\n'
+                    txtfile.write(output)
+            except:
+                pass
+
+
     print "Writing file..."
     txtfile.close()
+    f.close()
 
 
 
