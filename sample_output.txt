@@ -1,0 +1,46 @@
+Feb 21, 2012:Barbell Squat:1:5:45
+Feb 21, 2012:Barbell Squat:2:5:45
+Feb 21, 2012:Barbell Squat:3:5:135
+Feb 21, 2012:Barbell Squat:4:5:160
+Feb 21, 2012:Barbell Squat:5:5:195
+Feb 21, 2012:Barbell Squat:6:5:225
+Feb 21, 2012:Barbell Squat:7:5:255
+Feb 21, 2012:Barbell Bench Press:1:5:45
+Feb 21, 2012:Barbell Bench Press:2:5:45
+Feb 21, 2012:Barbell Bench Press:3:5:95
+Feb 21, 2012:Barbell Bench Press:4:5:120
+Feb 21, 2012:Barbell Bench Press:5:5:145
+Feb 21, 2012:Barbell Bench Press:6:5:170
+Feb 21, 2012:Barbell Bench Press:7:4:190
+Feb 21, 2012:Bent Over Barbell Row:1:5:55
+Feb 21, 2012:Bent Over Barbell Row:2:5:70
+Feb 21, 2012:Bent Over Barbell Row:3:5:80
+Feb 21, 2012:Bent Over Barbell Row:4:5:95
+Feb 21, 2012:Bent Over Barbell Row:5:8:110
+Feb 18, 2012:Barbell Squat:1:5:135
+Feb 18, 2012:Barbell Squat:2:5:170
+Feb 18, 2012:Barbell Squat:3:5:205
+Feb 18, 2012:Barbell Squat:4:5:235
+Feb 18, 2012:Barbell Squat:5:4:275
+Feb 18, 2012:Barbell Squat:6:8:205
+Feb 18, 2012:Barbell Bench Press:1:5:45
+Feb 18, 2012:Barbell Bench Press:2:5:45
+Feb 18, 2012:Barbell Bench Press:3:5:95
+Feb 18, 2012:Barbell Bench Press:4:5:120
+Feb 18, 2012:Barbell Bench Press:5:5:145
+Feb 18, 2012:Barbell Bench Press:6:5:170
+Feb 18, 2012:Barbell Bench Press:7:2:195
+Feb 18, 2012:Bent Over Barbell Row:1:5:55
+Feb 18, 2012:Bent Over Barbell Row:2:5:65
+Feb 18, 2012:Bent Over Barbell Row:3:5:80
+Feb 18, 2012:Bent Over Barbell Row:4:5:95
+Feb 18, 2012:Bent Over Barbell Row:5:5:110
+Feb 18, 2012:Bent Over Barbell Row:6:8:95
+Feb 18, 2012:Dips - Triceps Version:1:7:95
+Feb 18, 2012:Dips - Triceps Version:2:7:75
+Feb 18, 2012:Dips - Triceps Version:3:7:75
+Feb 16, 2012:Barbell Deadlift:1:5:135
+Feb 16, 2012:Barbell Deadlift:2:5:190
+Feb 16, 2012:Barbell Deadlift:3:5:225
+Feb 16, 2012:Barbell Deadlift:4:5:265
+Feb 16, 2012:Barbell Deadlift:5:5:305
