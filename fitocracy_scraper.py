@@ -117,7 +117,7 @@ def main():
 
     soup = BeautifulSoup(f)
     actions = soup.find_all("div", "action")
-    for action in actions[:10]:
+    for action in actions:
         try:
             atags = action.find_all('a')
             date = atags[1].contents[0] #date
