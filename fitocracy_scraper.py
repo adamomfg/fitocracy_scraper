@@ -52,7 +52,7 @@ seperator = ':'
 
 
 #get comments too?
-get_comments = 1
+get_comments = 0
 
 
 from bs4 import BeautifulSoup
@@ -65,7 +65,7 @@ import spynner
 import pyquery
 
 testing_output = 0
-
+debug = 0
 
 def getHtml():
     websiteProfile = 'http://www.fitocracy.com/profile/'
@@ -88,7 +88,7 @@ def getHtml():
         br.wk_click_ajax('#load_more_from_stream')
         print "clicking next..."
         sleep(1)
-    
+   
     myhtml = br._get_html()
 
     if testing_output:
@@ -106,10 +106,44 @@ def cleanOutput(date, lift, set, reps, weight):
     output =  date + seperator + lift + seperator + str(set) + seperator + str(reps) + seperator + str(weight) +'\n'
     return output
 
+def getComments(action):
+    litags = action.find_all('li', 'user_comment clearfix')
+    users = ''
+    comments = []
+    for tag in litags:
+        for p in tag.find_all('p'):
+            try:
+                comments.append(str(p.contents[2]))
+                for span in p.find('span'):
+                    user = str(span.string)
+                    users = users + ',' + user
+            except:
+                pass
+    
+    #clean up comments 
+    newusers = []
+    newcomments = []
+    for user in users.split(','):
+        if user == '\n':
+            continue
+        elif user == '':
+            continue
+        else:
+            newusers.append(user.strip())
+    
+    for comment in comments:
+        if comment == '\n':
+            continue
+        elif comment == '':
+            continue
+        else:
+            newcomments.append(comment.strip())
+    return newusers, newcomments 
+
+
 
 def main():
     txtfile = open(outputfile, 'w')
-    
     if testing_output:
         f = open('/home/ben/fitocracy.html', 'r')
     else:
@@ -117,90 +151,105 @@ def main():
 
     soup = BeautifulSoup(f)
     actions = soup.find_all("div", "action")
+
+    #all the actions
     for action in actions:
+
         try:
             atags = action.find_all('a')
-            date = atags[1].contents[0] #date
+            date = atags[1].contents[0] 
         except:
             pass
 
         #get comments
-        litags = action.find_all('li', 'user_comment clearfix')
-        users = ''
-        comments = []
-        for tag in litags:
-            for p in tag.find_all('p'):
-                try:
-                    comments.append(str(p.contents[2]))
-                    for span in p.find('span'):
-                        user = str(span.string)
-                        users = users + ',' + user
+        if get_comments:
+            newusers, newcomments = getComments(action)
 
-                except:
-                    pass
-        
-        #clean up comments 
-        newusers = []
-        newcomments = []
-        for user in users.split(','):
-            if user == '\n':
-                continue
-            elif user == '':
-                continue
-            else:
-                newusers.append(user.strip())
-        
-        for comment in comments:
-            if comment == '\n':
-                continue
-            elif comment == '':
-                continue
-            else:
-                newcomments.append(comment.strip())
-        
+        unwritten_chin = 0
 
         span = action.find_all('span')
         for tag in span:
             try:
                 if tag.has_key('style'): #style is used for hidden elements
+                    if debug:
+                        print 'found a hidden element. skipping...'
                     continue 
                 if tag.find(text = " weighted"):  #messes up formatting
+                    if debug:
+                        print 'found weighted in name. skipping...'
                     continue 
-                if date == tag.contents[0]: #don't need to print date again
+                if date == tag.contents[0]: 
                     continue
+
+                #lift name
                 if not tag.find(text = re.compile('\d')):
+                    if unwritten_chin:
+                        output = cleanOutput(date, lift, set, reps, weight)
+                        if set == 1 and  get_comments:
+                            if note:
+                                txtfile.write('\n' + note + '\n')
+                        txtfile.write(output)
+                        set = set + 1
+                        unwritten_chin = 0
+
+
                     lift = tag.contents[0]
                     lift = re.search(r'(.+)(:)', lift).group(1)
-                    newlift = 1
                     weight = '0 lb'
                     set = 1
+                    if debug:
+                        print 'found the lift name: ', lift
                     continue
+
+                #lbs
                 if tag.find(text = re.compile('lb')) or tag.find(text = re.compile('kg')):
+
                     weight = tag.contents[0]
+                    if debug:
+                        print 'found the weight: ', weight
                     if re.search(r'Dips', lift) or re.search(r'Pull-Up', lift) or re.search(r'Chin-Up', lift):
                         output = cleanOutput(date, lift, set, reps, weight)
+                        if debug:
+                            print 'looks like a dip or pull up. writing output... \n', output
                         txtfile.write(output)
+                        unwritten_chin = 0
                         if set == 1 and note and get_comments:
                             txtfile.write('\n' + note + '\n')
                         set = set + 1
                     continue
 
+                #reps
                 if tag.find(text = re.compile('reps')):
+                    if unwritten_chin:
+                        output = cleanOutput(date, lift, set, reps, weight)
+                        if set == 1 and  get_comments:
+                            if note:
+                                txtfile.write('\n' + note + '\n')
+                        txtfile.write(output)
+                        set = set + 1
+                        unwritten_chin = 0
+
                     reps = tag.contents[0]
+                    if debug:
+                        print 'found the reps ', reps
 
-                    #look for user comments
-                    note = ''
-                    next_note = tag.find_next("li", "stream_note")
-                    if next_note.parent == tag.parent.parent:
-                        note = next_note.contents[0]
+                    if get_comments:
+                        note = ''
+                        next_note = tag.find_next("li", "stream_note")
+                        if next_note.parent == tag.parent.parent:
+                            note = next_note.contents[0]
 
-                    #make output look nice
                     if not (re.search(r'Dips', lift) or re.search(r'Pull-Up', lift) or re.search(r'Chin-Up', lift)):
                         output = cleanOutput(date, lift, set, reps, weight)
+                        if debug:
+                            print 'looks like normal weights. writing outout\n ', output
+                        if set == 1 and  get_comments:
+                            if note:
+                                txtfile.write('\n' + note + '\n')
                         txtfile.write(output)
-                        if set == 1 and note and get_comments:
-                            txtfile.write('\n' + note + '\n')
                         set = set + 1
+                    else:
+                        unwritten_chin = 1
               
             except:
                 pass
@@ -214,7 +263,7 @@ def main():
                 pass
 
 
-    print "Writing file..."
+    print "Writing file to" + ' ' + outputfile
     txtfile.close()
     if testing_output:
         f.close()
