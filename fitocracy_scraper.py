@@ -55,8 +55,6 @@ seperator = ':'
 get_comments = 1
 
 
-
-#CODE BEGINS HERE
 from bs4 import BeautifulSoup
 import sys
 import re
@@ -66,8 +64,7 @@ from time import sleep
 import spynner
 import pyquery
 
-
-
+testing_output = 0
 
 
 def getHtml():
@@ -94,27 +91,33 @@ def getHtml():
     
     myhtml = br._get_html()
 
-    #for testing so i dont have to scrape every time
-    """
-    f = open('/home/ben/fitocracy.html', 'w')
-    f.write(myhtml)
-    f.close()
-    """
+    if testing_output:
+        f = open('/home/ben/fitocracy.html', 'w')
+        f.write(myhtml)
+        f.close()
+
     br.close()
     return myhtml
+
+def cleanOutput(date, lift, set, reps, weight):
+    reps = re.search(r'(\d+)', reps).group()
+    weight = re.search(r'(\d+)', weight).group()
     
+    output =  date + seperator + lift + seperator + str(set) + seperator + str(reps) + seperator + str(weight) +'\n'
+    return output
+
 
 def main():
     txtfile = open(outputfile, 'w')
     
-    f = getHtml()
-
-    #just for testing
-    #f = open('/home/ben/fitocracy.html', 'r')
+    if testing_output:
+        f = open('/home/ben/fitocracy.html', 'r')
+    else:
+        f = getHtml()
 
     soup = BeautifulSoup(f)
     actions = soup.find_all("div", "action")
-    for action in actions:
+    for action in actions[:10]:
         try:
             atags = action.find_all('a')
             date = atags[1].contents[0] #date
@@ -168,11 +171,18 @@ def main():
                 if not tag.find(text = re.compile('\d')):
                     lift = tag.contents[0]
                     lift = re.search(r'(.+)(:)', lift).group(1)
+                    newlift = 1
                     weight = '0 lb'
                     set = 1
                     continue
                 if tag.find(text = re.compile('lb')) or tag.find(text = re.compile('kg')):
                     weight = tag.contents[0]
+                    if re.search(r'Dips', lift) or re.search(r'Pull-Up', lift) or re.search(r'Chin-Up', lift):
+                        output = cleanOutput(date, lift, set, reps, weight)
+                        txtfile.write(output)
+                        if set == 1 and note and get_comments:
+                            txtfile.write('\n' + note + '\n')
+                        set = set + 1
                     continue
 
                 if tag.find(text = re.compile('reps')):
@@ -185,18 +195,16 @@ def main():
                         note = next_note.contents[0]
 
                     #make output look nice
-                    reps = re.search(r'(\d+)', reps).group()
-                    weight = re.search(r'(\d+)', weight).group()
-                    #date = time.strptime(date, "%b %d, %Y")
-                    
-                    output =  date + seperator + lift + seperator + str(set) + seperator + str(reps) + seperator + str(weight) +'\n'
-                    if set == 1 and note and get_comments:
-                        txtfile.write('\n' + note + '\n')
-                    txtfile.write(output)
-                    set = set + 1
-               
+                    if not (re.search(r'Dips', lift) or re.search(r'Pull-Up', lift) or re.search(r'Chin-Up', lift)):
+                        output = cleanOutput(date, lift, set, reps, weight)
+                        txtfile.write(output)
+                        if set == 1 and note and get_comments:
+                            txtfile.write('\n' + note + '\n')
+                        set = set + 1
+              
             except:
                 pass
+
         if get_comments:
             try:
                 for i in range(len(newusers)):
@@ -208,7 +216,9 @@ def main():
 
     print "Writing file..."
     txtfile.close()
-    #f.close()
+    if testing_output:
+        f.close()
+
 
 
 
