@@ -213,9 +213,9 @@ def main():
                             print 'looks like a dip or pull up. writing output... \n', output
                         txtfile.write(output)
                         unwritten_chin = 0
+                        set = set + 1
                         if set == 1 and note and get_comments:
                             txtfile.write('\n' + note + '\n')
-                        set = set + 1
                     continue
 
                 #reps
